@@ -1,5 +1,10 @@
 #include <signal.h>
+#ifdef USE_AMALGAMATION
 #include "open62541.h"
+#else
+#include <ua_server.h>
+#include <ua_config_default.h>
+#endif
 
 UA_Boolean running = true;
 void signalHandler(int sig) {

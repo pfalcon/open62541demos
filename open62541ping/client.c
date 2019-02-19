@@ -1,5 +1,11 @@
 #include <stdio.h>
+#ifdef USE_AMALGAMATION
 #include "open62541.h"
+#else
+#include <ua_client_highlevel.h>
+#include <ua_config_default.h>
+#include <ua_log_stdout.h>
+#endif
 
 int main(int argc, char *argv[])
 {
