@@ -1,4 +1,4 @@
 all:
-	gcc server.c -I /opt/Linaro/open62541.git/build/ -L /opt/Linaro/open62541.git/build/bin -l open62541 -o server
-	gcc client.c -I /opt/Linaro/open62541.git/build/ -L /opt/Linaro/open62541.git/build/bin -l open62541 -o client
+	gcc -DUSE_AMALGAMATION server.c open62541.c -o server
+	gcc -DUSE_AMALGAMATION client.c open62541.c -o client
 
