@@ -29,12 +29,14 @@ int main(int argc, char *argv[])
         printf("the value is: %i\n", *(UA_Int32*)value.data);
     }
 
+#if 0
     (*(UA_Int32*)value.data)++;
 
     status = UA_Client_writeValueAttribute(client, UA_NODEID_STRING(1, "the.answer"), &value);
     if(status != UA_STATUSCODE_GOOD) {
 	    printf("error modify value\n");
     }
+#endif
 
     /* Clean up */
     UA_Variant_deleteMembers(&value);
