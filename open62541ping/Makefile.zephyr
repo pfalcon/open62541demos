@@ -1,0 +1,55 @@
+BOARD ?= qemu_x86
+CONF_FILE = prj.conf
+
+OPEN62541 = ../../open62541
+OPEN62541_BUILD = $(OPEN62541)/BUILD
+
+INC = \
+    -I $(OPEN62541)/include \
+    -I $(OPEN62541)/plugins \
+    -I $(OPEN62541)/plugins/securityPolicies \
+    -I $(OPEN62541)/arch/posix \
+    -I $(OPEN62541)/arch \
+    -I $(OPEN62541)/src \
+    -I $(OPEN62541)/deps \
+    -I $(OPEN62541_BUILD)/src_generated \
+    -I $(OPEN62541_BUILD)
+
+
+Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
+ifneq ($(MAKECMDGOALS), clean)
+include $(Z_EXPORTS)
+endif
+
+CFLAGS = $(Z_CFLAGS) $(INC)
+
+
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
+
+$(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
+	$(MAKE) -C outdir/$(BOARD) $@
+
+LIBOBJS = \
+    $(OPEN62541)/src/ua_types.o \
+    $(OPEN62541)/src/ua_types_encoding_binary.o \
+    $(OPEN62541)/src/client/ua_client.o \
+    $(OPEN62541)/src/client/ua_client_connect.o \
+    $(OPEN62541)/src/client/ua_client_subscriptions.o \
+    \
+    $(OPEN62541_BUILD)/src_generated/ua_types_generated.o \
+
+
+libopen62541.a: $(LIBOBJS)
+	ar rcs $@ $^
+
+clean:
+	rm -rf $(LIBOBJS)
+
+prepare: outdir/$(BOARD)/Makefile
+
+outdir/$(BOARD)/Makefile: $(CONF_FILE)
+	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) -DCONF_FILE=$(CONF_FILE) -Boutdir/$(BOARD) -H.
+
+$(Z_EXPORTS): outdir/$(BOARD)/Makefile
+	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
+	make -C outdir/$(BOARD) syscall_macros_h_target syscall_list_h_target kobj_types_h_target
