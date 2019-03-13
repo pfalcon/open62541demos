@@ -7,7 +7,8 @@ industrial communication/automation protocol, to Zephyr RTOS, using Zephyr's
 POSIX subsystem. A sample Zephyr server-side application is included, allowing
 access from a Linux client (`open62541ping` directory).
 
-To build:
+Building Instructions
+---------------------
 
 The steps below were tested with:
 
@@ -29,6 +30,12 @@ Once done with Zephyr tree set up, back to this repository:
 
     git submodule update --init
     cd open62541ping
+
+Building and Running on QEMU
+----------------------------
+
+To build for Zephyr's (virtual) board `qemu_x86`:
+
     ./build-all-zephyr.sh
 
 Now you can run the server application in QEMU. Follow standard Zephyr
@@ -53,3 +60,9 @@ a variable and print its value:
 the value is: 42
 
 ```
+
+Building and Running on a Real Hardware
+---------------------------------------
+
+Follow instructions in the previous section, just pass a board identifier as
+a `BOARD=...` parameter to the build script.
