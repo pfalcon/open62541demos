@@ -11,6 +11,17 @@ void signalHandler(int sig) {
     running = false;
 }
 
+static void before_read(UA_Server *server,
+    const UA_NodeId *sessionId, void *sessionContext,
+    const UA_NodeId *nodeid, void *nodeContext,
+    const UA_NumericRange *range, const UA_DataValue *data)
+{
+    UA_Int32 val = (UA_Int32)random() & 0xff;
+    UA_Variant value;
+    UA_Variant_setScalar(&value, &val, &UA_TYPES[UA_TYPES_INT32]);
+    UA_Server_writeValue(server, *nodeid, value);
+}
+
 int main(int argc, char** argv)
 {
     signal(SIGINT, signalHandler); /* catch ctrl-c */
@@ -24,9 +35,6 @@ int main(int argc, char** argv)
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.displayName = UA_LOCALIZEDTEXT("en-US", "the answer");
 
-    UA_Int32 myInteger = 42;
-    UA_Variant_setScalar(&attr.value, &myInteger, &UA_TYPES[UA_TYPES_INT32]);
-
     /* 2) Define where the node shall be added with which browsename */
     UA_NodeId newNodeId = UA_NODEID_STRING(1, "the.answer");
     UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
@@ -37,6 +45,12 @@ int main(int argc, char** argv)
     /* 3) Add the node */
     UA_Server_addVariableNode(server, newNodeId, parentNodeId, parentReferenceNodeId,
                               browseName, variableType, attr, NULL, NULL);
+
+    /* Install variable update callbacks */
+    UA_ValueCallback callback;
+    callback.onRead = before_read;
+    callback.onWrite = NULL;
+    UA_Server_setVariableNode_valueCallback(server, newNodeId, callback);
 
     /* Run the server loop */
     UA_StatusCode status = UA_Server_run(server, &running);
